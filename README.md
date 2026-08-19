@@ -1,49 +1,67 @@
 # CineRota
 
-Vue 3 + TMDB API ile geliştirilmiş film listeleme uygulaması.
+Vue 3 + TMDB API ile geliştirilmiş modern film keşif uygulaması.
 
-Canlı site: https://aksoyece.github.io/vue-tmdb-film-listesi/
+🌐 **Canlı site:** https://aksoyece.github.io/vue-tmdb-film-listesi/
 
-![CineRota ana sayfa](docs/cinerota.png)
+![CineRota önizleme](cinerota.png)
+
+---
 
 ## Özellikler
 
-- Popüler, en iyi, yakında ve vizyondaki filmler
-- Film detay sayfası
-- Ada göre arama
-- Sayfalama
-- Responsive tasarım
-- Favoriler, tema, tür filtresi ve benzer filmler
+- 🎬 Popüler, En İyiler, Yakında ve Vizyonda kategorileri
+- 🔍 Film arama
+- 📄 Film detay sayfası (puan, süre, özet, benzer filmler)
+- ❤️ Favorilere ekle / çıkar (localStorage ile kalıcı)
+- 🎭 Çoklu tür filtresi
+- 🌗 Karanlık / Aydınlık tema
+- 📱 Mobil, tablet ve masaüstü uyumlu tasarım
+- ⚡ Sayfalama
 
 ## Teknolojiler
 
-Vue 3 · Vite · Vue Router · Pinia · Axios · TMDB API
+| Teknoloji | Kullanım amacı |
+|-----------|----------------|
+| Vue 3 (Composition API) | UI framework |
+| Vite | Build tool |
+| Vue Router | Sayfa yönlendirme |
+| Pinia | State management |
+| Axios | HTTP istekleri |
+| TMDB API | Film verisi |
 
 ## Kurulum
 
 ```bash
+# Bağımlılıkları yükle
 npm install
+
+# Ortam değişkenlerini ayarla
 cp .env.example .env
 ```
 
-`.env` dosyasına [TMDB API anahtarını](https://www.themoviedb.org/settings/api) yazın:
+`.env` dosyasına [TMDB API anahtarını](https://www.themoviedb.org/settings/api) ekle:
 
 ```
-VITE_TMDB_API_KEY=anahtar
+VITE_TMDB_API_KEY=senin_api_anahtarin
 ```
 
 ```bash
+# Geliştirme sunucusunu başlat
 npm run dev
 ```
 
 ## Klasör yapısı
 
-```text
+```
 src/
-  components/   yeniden kullanılan arayüz parçaları
-  views/        sayfalar
-  router/       rotalar
-  stores/       Pinia state
-  services/     TMDB API istekleri
-  utils/        tarih, puan ve görsel yardımcıları
+├── components/
+│   ├── layout/     AppHeader, AppFooter
+│   ├── movie/      MovieCard, MovieGrid, HeroSection
+│   └── ui/         GenreFilter, PaginationBar, Loader, AppIcon...
+├── views/          HomeView, CategoryView, SearchView, MovieDetailView, FavoritesView
+├── router/         Vue Router tanımları
+├── stores/         Pinia store'ları (movies, favorites, genres, theme)
+├── services/       TMDB API istekleri
+└── utils/          Tarih, puan ve görsel yardımcı fonksiyonlar
 ```
