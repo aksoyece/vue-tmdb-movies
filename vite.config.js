@@ -3,5 +3,5 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
-  base: process.env.GITHUB_PAGES === 'true' ? '/vue-tmdb-film-listesi/' : '/',
+  base: process.env.GITHUB_PAGES === 'true' ? '/vue-tmdb-movies/' : '/',
 })

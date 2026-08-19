@@ -2,7 +2,7 @@
 
 Vue 3 + TMDB API ile geliştirilmiş modern film keşif uygulaması.
 
-🌐 **Canlı site:** https://aksoyece.github.io/vue-tmdb-film-listesi/
+🌐 **Canlı site:** https://aksoyece.github.io/vue-tmdb-movies/
 
 ![CineRota önizleme](cinerota.png)
 
