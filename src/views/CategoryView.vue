@@ -1,6 +1,6 @@
 <script setup>
 import { computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import MovieGrid from '../components/movie/MovieGrid.vue'
 import PaginationBar from '../components/ui/PaginationBar.vue'
@@ -8,12 +8,14 @@ import Loader from '../components/ui/Loader.vue'
 import ErrorState from '../components/ui/ErrorState.vue'
 import EmptyState from '../components/ui/EmptyState.vue'
 import GenreFilter from '../components/ui/GenreFilter.vue'
-import { useMoviesStore } from '../stores/movies'
+import { useMovieListStore } from '../stores/movieList'
 import { categoryLabels } from '../services/tmdb'
+import { buildListQuery, parseGenreIds, parsePage } from '../utils/listQuery'
 
 const route = useRoute()
-const movies = useMoviesStore()
-const { list, loading, error, page, totalPages, totalResults, selectedGenreIds } = storeToRefs(movies)
+const router = useRouter()
+const listStore = useMovieListStore()
+const { category } = storeToRefs(listStore)
 
 const type = computed(() => {
   const value = route.params.type
@@ -21,24 +23,37 @@ const type = computed(() => {
 })
 
 const title = computed(() => categoryLabels[type.value] || 'Kategori')
+const page = computed(() => parsePage(route.query))
+const genreIds = computed(() => parseGenreIds(route.query))
 
 const genreModel = computed({
-  get: () => selectedGenreIds.value,
+  get: () => genreIds.value,
   set: (value) => {
-    movies.setGenres(value)
-    load(1)
+    router.replace({
+      query: buildListQuery({ page: 1, genres: value }),
+    })
   },
 })
 
-function load(nextPage = 1) {
-  movies.loadCategory(type.value, nextPage)
+function setPage(nextPage) {
+  router.replace({
+    query: buildListQuery({ page: nextPage, genres: genreIds.value }),
+  })
+}
+
+function reload() {
+  listStore.loadCategory({
+    type: type.value,
+    page: page.value,
+    genreIds: genreIds.value,
+  })
 }
 
 watch(
-  () => route.params.type,
+  () => [type.value, page.value, genreIds.value.join(',')],
   () => {
-    movies.setGenres([])
-    load(1)
+    reload()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   },
   { immediate: true },
 )
@@ -58,13 +73,17 @@ watch(
       <GenreFilter v-model="genreModel" />
 
       <div class="catalog-main">
-        <Loader v-if="loading" />
-        <ErrorState v-else-if="error" :message="error" @retry="load(page)" />
-        <EmptyState v-else-if="!list.length" message="Bu kategoride gösterilecek film yok." />
+        <Loader v-if="category.loading" />
+        <ErrorState v-else-if="category.error" :message="category.error" @retry="reload" />
+        <EmptyState v-else-if="!category.list.length" message="Bu kategoride gösterilecek film yok." />
         <template v-else>
-          <p class="page-subtitle">Toplam {{ totalResults }} film</p>
-          <MovieGrid :movies="list" />
-          <PaginationBar :page="page" :total-pages="totalPages" @change="load" />
+          <p class="page-subtitle">Toplam {{ category.totalResults }} film</p>
+          <MovieGrid :movies="category.list" />
+          <PaginationBar
+            :page="category.page"
+            :total-pages="category.totalPages"
+            @change="setPage"
+          />
         </template>
       </div>
     </div>

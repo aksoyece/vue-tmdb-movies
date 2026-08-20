@@ -1,29 +1,42 @@
 <script setup>
 import { computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import MovieGrid from '../components/movie/MovieGrid.vue'
 import PaginationBar from '../components/ui/PaginationBar.vue'
 import Loader from '../components/ui/Loader.vue'
 import ErrorState from '../components/ui/ErrorState.vue'
 import EmptyState from '../components/ui/EmptyState.vue'
-import { useMoviesStore } from '../stores/movies'
+import { useMovieListStore } from '../stores/movieList'
+import { parsePage } from '../utils/listQuery'
 
 const route = useRoute()
-const movies = useMoviesStore()
-const { list, loading, error, page, totalPages, totalResults } = storeToRefs(movies)
+const router = useRouter()
+const listStore = useMovieListStore()
+const { search } = storeToRefs(listStore)
 
 const query = computed(() => String(route.query.q || '').trim())
+const page = computed(() => parsePage(route.query))
 
-function load(nextPage = 1) {
-  if (!query.value) {
-    movies.clearList()
-    return
-  }
-  movies.search(query.value, nextPage)
+function setPage(nextPage) {
+  const nextQuery = { ...route.query }
+  if (nextPage > 1) nextQuery.page = String(nextPage)
+  else delete nextQuery.page
+  router.replace({ query: nextQuery })
 }
 
-watch(query, () => load(1), { immediate: true })
+function reload() {
+  listStore.loadSearch({ query: query.value, page: page.value })
+}
+
+watch(
+  () => [query.value, page.value],
+  () => {
+    reload()
+    if (query.value) window.scrollTo({ top: 0, behavior: 'smooth' })
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -41,17 +54,17 @@ watch(query, () => load(1), { immediate: true })
       title="Arama yapın"
       message="Üstteki arama kutusuna bir film adı yazın."
     />
-    <Loader v-else-if="loading" />
-    <ErrorState v-else-if="error" :message="error" @retry="load(page)" />
+    <Loader v-else-if="search.loading" />
+    <ErrorState v-else-if="search.error" :message="search.error" @retry="reload" />
     <EmptyState
-      v-else-if="!list.length"
+      v-else-if="!search.list.length"
       title="Sonuç bulunamadı"
       :message="`“${query}” ile eşleşen film bulunamadı.`"
     />
     <template v-else>
-      <p class="page-subtitle">{{ totalResults }} sonuç bulundu</p>
-      <MovieGrid :movies="list" />
-      <PaginationBar :page="page" :total-pages="totalPages" @change="load" />
+      <p class="page-subtitle">{{ search.totalResults }} sonuç bulundu</p>
+      <MovieGrid :movies="search.list" />
+      <PaginationBar :page="search.page" :total-pages="search.totalPages" @change="setPage" />
     </template>
   </section>
 </template>

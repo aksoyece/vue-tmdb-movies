@@ -63,6 +63,14 @@ Task dışı eklenenler:
 ### Benzer filmler
 - Film detay sayfasının altında TMDB benzer filmleri gösterilir
 
+## Mimari notlar
+
+- Liste/arama state’i `movieList` store’unda; detay/fragman/benzer filmler `movieDetail` store’unda
+- Home, kategori ve arama kendi bucket’larında tutulur (birbirinin listesini ezmez)
+- Hızlı sayfa/arama değişiminde eski istekler `AbortController` ile iptal edilir
+- Hero, ana sayfadaki `/popular` cevabından beslenir (ayrı istek atmaz)
+- Sayfa numarası ve tür filtresi URL query’de tutulur (`?page=2&genres=28,12`)
+
 ## Teknolojiler
 
 | Teknoloji | Kullanım amacı |
@@ -111,7 +119,7 @@ src/
 │   └── ui/         GenreFilter, PaginationBar, Loader, TrailerModal, AppIcon...
 ├── views/          HomeView, CategoryView, SearchView, MovieDetailView, FavoritesView
 ├── router/         Vue Router tanımları
-├── stores/         Pinia store'ları (movies, favorites, genres, theme)
+├── stores/         Pinia store'ları (movieList, movieDetail, favorites, genres, theme)
 ├── services/       TMDB API istekleri
 └── utils/          Tarih, puan ve görsel yardımcı fonksiyonlar
 ```

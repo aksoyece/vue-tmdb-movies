@@ -6,17 +6,17 @@ import MovieGrid from '../components/movie/MovieGrid.vue'
 import Loader from '../components/ui/Loader.vue'
 import ErrorState from '../components/ui/ErrorState.vue'
 import TrailerModal from '../components/ui/TrailerModal.vue'
-import { useMoviesStore } from '../stores/movies'
+import { useMovieDetailStore } from '../stores/movieDetail'
 import { useFavoritesStore } from '../stores/favorites'
 import { formatDate, formatRuntime, formatScore } from '../utils/format'
 import { backdropUrl, posterUrl } from '../utils/images'
 import AppIcon from '../components/ui/AppIcon.vue'
 
 const route = useRoute()
-const movies = useMoviesStore()
+const movieDetail = useMovieDetailStore()
 const favorites = useFavoritesStore()
 const { details, detailsLoading, detailsError, similar, similarLoading, trailerKey } =
-  storeToRefs(movies)
+  storeToRefs(movieDetail)
 
 const movieId = computed(() => Number(route.params.id))
 const isFavorite = computed(() => favorites.isFavorite(movieId.value))
@@ -25,8 +25,8 @@ const showTrailer = ref(false)
 function load() {
   if (!movieId.value) return
   showTrailer.value = false
-  movies.loadDetails(movieId.value)
-  movies.loadSimilar(movieId.value)
+  movieDetail.loadDetails(movieId.value)
+  movieDetail.loadSimilar(movieId.value)
 }
 
 watch(movieId, load, { immediate: true })

@@ -1,40 +1,48 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { RouterLink } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import { backdropUrl, posterUrl } from '../../utils/images'
 import { formatScore } from '../../utils/format'
-import { getPopularMovies } from '../../services/tmdb'
+import { useMovieListStore } from '../../stores/movieList'
 import AppIcon from '../ui/AppIcon.vue'
 
-const movies = ref([])
-const activeIndex = ref(0)
-const loaded = ref(false)
-const paused = ref(false)
+const listStore = useMovieListStore()
+const { heroSlides } = storeToRefs(listStore)
 
+const activeIndex = ref(0)
+const paused = ref(false)
 const dragStartX = ref(0)
 const dragDeltaX = ref(0)
 const isDragging = ref(false)
 
 let timer = null
-
 const SWIPE_THRESHOLD = 48
 
+const movies = computed(() => heroSlides.value)
 const active = computed(() => movies.value[activeIndex.value] ?? null)
+const loaded = computed(() => movies.value.length > 0)
 const slideCount = computed(() => movies.value.length)
 
-async function fetchMovies() {
-  try {
-    const res = await getPopularMovies(1)
-    movies.value = res.data.results.filter((m) => m.backdrop_path).slice(0, 8)
-    loaded.value = true
+watch(
+  movies,
+  (value) => {
+    if (!value.length) {
+      activeIndex.value = 0
+      clearInterval(timer)
+      return
+    }
+    if (activeIndex.value >= value.length) {
+      activeIndex.value = 0
+    }
     startTimer()
-  } catch {
-    /* sessizce geç */
-  }
-}
+  },
+  { immediate: true },
+)
 
 function startTimer() {
   clearInterval(timer)
+  if (!slideCount.value) return
   timer = setInterval(() => {
     if (!paused.value && !isDragging.value && slideCount.value) {
       next()
@@ -102,7 +110,6 @@ function onPointerEnd(event) {
   }
 }
 
-onMounted(fetchMovies)
 onUnmounted(() => clearInterval(timer))
 </script>
 
