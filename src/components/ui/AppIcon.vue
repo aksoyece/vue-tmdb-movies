@@ -61,5 +61,9 @@ defineProps({
         d="m12 3 2.7 5.5 6 .9-4.4 4.3 1 6.1L12 16.8 6.7 19.8l1-6.1L3.3 9.4l6-.9L12 3Z"
       />
     </template>
+    <template v-else-if="name === 'play'">
+      <circle cx="12" cy="12" r="9" />
+      <path fill="currentColor" stroke="none" d="M10 8.5v7l6-3.5-6-3.5Z" />
+    </template>
   </svg>
 </template>

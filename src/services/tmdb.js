@@ -36,6 +36,10 @@ export function getSimilarMovies(id, page = 1) {
   return http.get(`/movie/${id}/similar`, { params: { page } })
 }
 
+export function getMovieVideos(id) {
+  return http.get(`/movie/${id}/videos`)
+}
+
 export function getGenreList() {
   return http.get('/genre/movie/list')
 }

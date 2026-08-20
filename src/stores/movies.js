@@ -65,6 +65,7 @@ export const useMoviesStore = defineStore('movies', {
     details: null,
     detailsLoading: false,
     detailsError: null,
+    trailerKey: null,
     similar: [],
     similarLoading: false,
   }),
@@ -138,17 +139,30 @@ export const useMoviesStore = defineStore('movies', {
       }
     },
 
+    pickTrailerKey(videos = []) {
+      const youtube = videos.filter((video) => video.site === 'YouTube' && video.key)
+      const trailer = youtube.find((video) => video.type === 'Trailer')
+      const teaser = youtube.find((video) => video.type === 'Teaser')
+      return trailer?.key || teaser?.key || youtube[0]?.key || null
+    },
+
     async loadDetails(id) {
       this.detailsLoading = true
       this.detailsError = null
       this.details = null
+      this.trailerKey = null
       this.similar = []
 
       try {
-        const response = await tmdb.getMovieDetails(id)
-        this.details = response.data
+        const [detailsResponse, videosResponse] = await Promise.all([
+          tmdb.getMovieDetails(id),
+          tmdb.getMovieVideos(id),
+        ])
+        this.details = detailsResponse.data
+        this.trailerKey = this.pickTrailerKey(videosResponse.data.results ?? [])
       } catch (error) {
         this.detailsError = parseApiError(error)
+        this.trailerKey = null
       } finally {
         this.detailsLoading = false
       }
