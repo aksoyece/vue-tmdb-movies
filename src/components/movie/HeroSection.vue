@@ -89,7 +89,7 @@ onUnmounted(() => clearInterval(timer))
           <p class="home-hero-overview">{{ active.overview }}</p>
           <RouterLink
             class="home-hero-btn"
-            :to="`/movie/${active.id}`"
+            :to="{ name: 'movie-detail', params: { id: active.id } }"
           >
             Detayları Gör
           </RouterLink>
