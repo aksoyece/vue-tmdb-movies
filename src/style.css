@@ -615,6 +615,13 @@ img {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+}
+
+.home-hero-inner.dragging {
+  cursor: grabbing;
 }
 
 .home-hero-bg {
@@ -657,6 +664,43 @@ img {
   padding: 32px;
   color: #fff;
   pointer-events: auto;
+}
+
+.home-hero-nav {
+  position: absolute;
+  top: 50%;
+  z-index: 4;
+  transform: translateY(-50%);
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 12, 20, 0.55);
+  color: #fff;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.home-hero-nav:hover {
+  background: rgba(10, 12, 20, 0.78);
+  transform: translateY(-50%) scale(1.04);
+}
+
+.home-hero-nav .app-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.home-hero-nav--prev {
+  left: 16px;
+}
+
+.home-hero-nav--next {
+  right: 16px;
 }
 
 .home-hero-poster {
@@ -1029,6 +1073,19 @@ img {
 
   .home-hero-overview {
     -webkit-line-clamp: 2;
+  }
+
+  .home-hero-nav {
+    width: 36px;
+    height: 36px;
+  }
+
+  .home-hero-nav--prev {
+    left: 10px;
+  }
+
+  .home-hero-nav--next {
+    right: 10px;
   }
 
   .movie-grid,

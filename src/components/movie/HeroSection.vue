@@ -10,9 +10,17 @@ const movies = ref([])
 const activeIndex = ref(0)
 const loaded = ref(false)
 const paused = ref(false)
+
+const dragStartX = ref(0)
+const dragDeltaX = ref(0)
+const isDragging = ref(false)
+
 let timer = null
 
+const SWIPE_THRESHOLD = 48
+
 const active = computed(() => movies.value[activeIndex.value] ?? null)
+const slideCount = computed(() => movies.value.length)
 
 async function fetchMovies() {
   try {
@@ -28,10 +36,22 @@ async function fetchMovies() {
 function startTimer() {
   clearInterval(timer)
   timer = setInterval(() => {
-    if (!paused.value && movies.value.length) {
-      activeIndex.value = (activeIndex.value + 1) % movies.value.length
+    if (!paused.value && !isDragging.value && slideCount.value) {
+      next()
     }
   }, 4000)
+}
+
+function next() {
+  if (!slideCount.value) return
+  activeIndex.value = (activeIndex.value + 1) % slideCount.value
+  startTimer()
+}
+
+function prev() {
+  if (!slideCount.value) return
+  activeIndex.value = (activeIndex.value - 1 + slideCount.value) % slideCount.value
+  startTimer()
 }
 
 function goTo(index) {
@@ -44,7 +64,42 @@ function pause() {
 }
 
 function resume() {
+  if (!isDragging.value) {
+    paused.value = false
+  }
+}
+
+function onPointerDown(event) {
+  if (event.button !== undefined && event.button !== 0) return
+  if (event.target.closest('button, a')) return
+
+  isDragging.value = true
+  paused.value = true
+  dragStartX.value = event.clientX
+  dragDeltaX.value = 0
+  event.currentTarget.setPointerCapture(event.pointerId)
+}
+
+function onPointerMove(event) {
+  if (!isDragging.value) return
+  dragDeltaX.value = event.clientX - dragStartX.value
+}
+
+function onPointerEnd(event) {
+  if (!isDragging.value) return
+
+  if (Math.abs(dragDeltaX.value) >= SWIPE_THRESHOLD) {
+    if (dragDeltaX.value < 0) next()
+    else prev()
+  }
+
+  isDragging.value = false
+  dragDeltaX.value = 0
   paused.value = false
+
+  if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+    event.currentTarget.releasePointerCapture(event.pointerId)
+  }
 }
 
 onMounted(fetchMovies)
@@ -58,23 +113,50 @@ onUnmounted(() => clearInterval(timer))
     @mouseenter="pause"
     @mouseleave="resume"
   >
-    <div class="home-hero-inner">
+    <div
+      class="home-hero-inner"
+      :class="{ dragging: isDragging }"
+      @pointerdown="onPointerDown"
+      @pointermove="onPointerMove"
+      @pointerup="onPointerEnd"
+      @pointercancel="onPointerEnd"
+    >
       <Transition name="hero-fade" mode="out-in">
         <img
           :key="active.id"
           class="home-hero-bg"
           :src="backdropUrl(active.backdrop_path, 'original')"
           :alt="active.title"
+          draggable="false"
         />
       </Transition>
 
       <div class="home-hero-overlay" />
+
+      <button
+        type="button"
+        class="home-hero-nav home-hero-nav--prev"
+        aria-label="Önceki film"
+        @click.stop="prev"
+      >
+        <AppIcon name="chevron-left" />
+      </button>
+
+      <button
+        type="button"
+        class="home-hero-nav home-hero-nav--next"
+        aria-label="Sonraki film"
+        @click.stop="next"
+      >
+        <AppIcon name="chevron-right" />
+      </button>
 
       <div class="home-hero-content">
         <img
           class="home-hero-poster"
           :src="posterUrl(active.poster_path, 'w342')"
           :alt="active.title"
+          draggable="false"
         />
         <div class="home-hero-info">
           <p class="home-hero-kicker">Öne çıkan film</p>
