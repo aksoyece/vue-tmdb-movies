@@ -37,7 +37,13 @@ export function getSimilarMovies(id, page = 1) {
 }
 
 export function getMovieVideos(id) {
-  return http.get(`/movie/${id}/videos`)
+  // Override global tr-TR so we get original/English trailers, not Turkish dubs
+  return http.get(`/movie/${id}/videos`, {
+    params: {
+      language: 'en-US',
+      include_video_language: 'en-US,en,null,fr,de,es,it,ja,ko,zh,hi,pt',
+    },
+  })
 }
 
 export function getGenreList() {

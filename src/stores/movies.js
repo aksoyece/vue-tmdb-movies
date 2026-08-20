@@ -139,11 +139,32 @@ export const useMoviesStore = defineStore('movies', {
       }
     },
 
-    pickTrailerKey(videos = []) {
+    pickTrailerKey(videos = [], originalLanguage = 'en') {
       const youtube = videos.filter((video) => video.site === 'YouTube' && video.key)
-      const trailer = youtube.find((video) => video.type === 'Trailer')
-      const teaser = youtube.find((video) => video.type === 'Teaser')
-      return trailer?.key || teaser?.key || youtube[0]?.key || null
+      const withoutTurkish = youtube.filter((video) => {
+        const name = video.name || ''
+        const isTurkishLang = video.iso_639_1 === 'tr'
+        const isTurkishName = /t[uü]rk[cç]e|turkish|dublaj/i.test(name)
+        return !isTurkishLang && !isTurkishName
+      })
+
+      const pool = withoutTurkish.length ? withoutTurkish : youtube
+
+      function prefer(list) {
+        if (!list.length) return null
+        return (
+          list.find((video) => video.iso_639_1 === originalLanguage && video.official) ||
+          list.find((video) => video.iso_639_1 === originalLanguage) ||
+          list.find((video) => video.official && video.type === 'Trailer') ||
+          list.find((video) => video.type === 'Trailer') ||
+          list.find((video) => video.type === 'Teaser') ||
+          list[0]
+        )
+      }
+
+      const trailers = pool.filter((video) => video.type === 'Trailer')
+      const teasers = pool.filter((video) => video.type === 'Teaser')
+      return prefer(trailers)?.key || prefer(teasers)?.key || prefer(pool)?.key || null
     },
 
     async loadDetails(id) {
@@ -159,7 +180,10 @@ export const useMoviesStore = defineStore('movies', {
           tmdb.getMovieVideos(id),
         ])
         this.details = detailsResponse.data
-        this.trailerKey = this.pickTrailerKey(videosResponse.data.results ?? [])
+        this.trailerKey = this.pickTrailerKey(
+          videosResponse.data.results ?? [],
+          this.details.original_language || 'en',
+        )
       } catch (error) {
         this.detailsError = parseApiError(error)
         this.trailerKey = null
