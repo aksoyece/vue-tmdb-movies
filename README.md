@@ -36,8 +36,14 @@ Vue 3 + TMDB API ile geliştirilmiş modern film keşif uygulaması.
 # Bağımlılıkları yükle
 npm install
 
-# Ortam değişkenlerini ayarla
+# Ortam değişkenlerini ayarla (Mac/Linux/Git Bash)
 cp .env.example .env
+```
+
+Windows PowerShell / CMD:
+
+```powershell
+copy .env.example .env
 ```
 
 `.env` dosyasına [TMDB API anahtarını](https://www.themoviedb.org/settings/api) ekle:
